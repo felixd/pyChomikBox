@@ -5,9 +5,8 @@ from ChomikBox.ChomikBox import Chomik, ChomikFolder, ChomikFile
 # This code lists all free downloadable files from Chomik and saves this list to file
 
 
-paths = ['/prywatne/MSDN/']
-out_f = r'g:\msdn\chomik.txt'
-
+paths = ['/Prywatne/ISO']
+out_f = r'test-list-chomik.txt'
 
 p = argparse.ArgumentParser()
 p.add_argument('login', help="Chomikuj login/email")
@@ -29,9 +28,11 @@ while folders:
             files.extend(f.files_list(only_downloadable=True))
         folders.remove(f)
 
-with open(out_f, 'w') as out:
+
+with open(out_f, 'a+') as out:
     for f in files:
         if f.name.endswith('.iso'):
             print(f.name, file=out)
+            print(f.path, file=out)
 
 c.logout()
