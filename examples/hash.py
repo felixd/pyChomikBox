@@ -15,7 +15,7 @@ chunk_size = 2 ** 12  # 4KiB
 max_errors_per_file = 5
 skip_hashed = True
 out_f = r'test-chomik.sha1'
-paths = ['/Testy']
+paths = ['test']
 
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s][%(levelname)s]: %(name)s | %(message)s', datefmt='%H:%M:%S')
 
