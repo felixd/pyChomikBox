@@ -640,6 +640,9 @@ class ChomikUploader(object):
         self.paused = True
 
     def start(self, attempts=0):
+        
+        self.chomik.logger.debug('Uploader: Start')
+        
         # attempts = -1 for infinite
         assert isinstance(attempts, int)
 
@@ -697,6 +700,9 @@ class ChomikUploader(object):
             return resp['@fileid']
 
     def resume(self):
+        
+        self.chomik.logger.debug('Uploader: Resume')
+        
         if self.finished:
             raise UploadException('Tried to resume finished upload')
         self.paused = False
