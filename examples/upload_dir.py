@@ -60,15 +60,14 @@ class ProgressCallback(object):
         self.bar.show(done)
 
         if done > size / 2 and self.stop:
-            print("Bytes uploaded: {i}".format(i=done))
             self.stop = False
             par.pause()
 
     def finish_callback(self, par):
         if isinstance(par, ChomikUploader):
-            print("Progress Callback - Bytes uploaded: {i}".format(i=par.bytes_uploaded))
+            print("\n@ Bytes uploaded: {i}\n".format(i=par.bytes_uploaded))
         elif isinstance(par, ChomikDownloader):
-            print("Progress Callback - Bytes uploaded: {i}".format(i=par.bytes_downloaded))
+            print("\n@ Bytes uploaded: {i}\n".format(i=par.bytes_downloaded))
         self.bar.done()
 
 appDir = os.getcwd()
@@ -89,7 +88,7 @@ for subdir, dirs, files in os.walk('.'):
         
     for f in files:
         fp = subdir + '/' + f
-        print('Local File: ' + fp)
+        print('Checking local file: ' + fp)
         if not isinstance(chomikCurrentDir.get_file(f), ChomikFile):
             pc = ProgressCallback()
             upload = chomikCurrentDir.upload_file(open(fp, 'rb'), f, pc.progress_callback)
