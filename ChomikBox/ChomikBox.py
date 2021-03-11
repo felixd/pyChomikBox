@@ -594,16 +594,21 @@ class Chomik(ChomikFolder):
         data = OrderedDict([['token', self.__token], ['folderId', folder.folder_id], ['fileName', name]])
         data = self._send_action('UploadToken', data)
 
+        web_upload_resp = self.chomik._send_web_action('Upload/GetUrl', {
+            'accountname': self.name,
+            'folderid': folder.folder_id
+        })
+        
         key, stamp, server = data['a:key'], data['a:stamp'], data['a:server']
 
-        return ChomikUploader(self, folder, file_like_obj, name, server, key, stamp, progress_callback)
+        return ChomikUploader(self, folder, file_like_obj, name, server, key, stamp, progress_callback, web_upload_resp)
 
 
 class ChomikUploader(object):
     class UploadPaused(Exception):
         pass
 
-    def __init__(self, chomik, folder, file, name, server, key, stamp, progress_callback=None):
+    def __init__(self, chomik, folder, file, name, server, key, stamp, progress_callback=None, web_upload=None):
         assert hasattr(file, 'read') and hasattr(file, 'tell') and hasattr(file, 'seek')
         assert isinstance(folder, ChomikFolder)
         assert callable(progress_callback)
@@ -619,13 +624,17 @@ class ChomikUploader(object):
         self.upload_size, self.bytes_uploaded = total_len(file), 0
         self.__start_pos, self.__part_size = 0, self.upload_size
         self.progress_callback = progress_callback
+        self.web_upload = web_upload
 
     def __callback(self, monitor):
         self.bytes_uploaded = self.__start_pos + (monitor.bytes_read - (monitor.len - self.__part_size))
         if self.progress_callback is not None:
             self.progress_callback(self)
         if self.paused:
-            raise self.UploadPaused
+            if self.bytes_uploaded == self.upload_size:
+                self.finished = True
+            # else:
+                # raise self.UploadPaused
 
     def pause(self):
         self.paused = True
@@ -640,17 +649,22 @@ class ChomikUploader(object):
             raise UploadException('Tried to start already started upload')
         self.started = True
 
-        data = OrderedDict([['chomik_id', ustr(self.chomik.chomik_id)], ['folder_id', ustr(self.folder.folder_id)],
-                            ['key', self.key], ['time', self.stamp], ['client', 'ChomikBox-'+CHOMIKBOX_VERSION], ['locale', 'PL'],
-                            ['file', (self.name, self.file)]])
+        data = { 'files[]': (self.name, self.file, 'application/octet-stream') }
         monitor = MultipartEncoderMonitor.from_fields(fields=data, callback=self.__callback)
         headers = {'Content-Type': monitor.content_type, 'User-Agent': 'Mozilla/5.0'}
 
-        # 's' if self.chomik.ssl else ''
         try:
             self.chomik.logger.debug('Uploader.start: Started uploading file "{n}" to folder {f}'.format(n=self.name, f=self.folder.folder_id))
-            resp = self.chomik.sess.post('http://{server}/file/'.format(server=self.server), data=monitor, headers=headers)
+            resp = self.chomik.sess_web.post(self.web_upload['Url'], data=monitor, headers=headers)
+            print(resp)
         except Exception as e:
+            # Unexpected error: <class 'requests.exceptions.ConnectionError'>
+            print('Exception:')
+            print(e)
+            print("Unexpected error:", sys.exc_info()[0])
+
+            print('Exception:')
+
             if isinstance(e, self.UploadPaused):
                 self.chomik.logger.debug('Uploader.start: Upload of file "{n}" paused'.format(n=self.name))
                 return 'paused'
@@ -668,6 +682,7 @@ class ChomikUploader(object):
                 else:
                     raise e
         else:
+            print(resp)
             self.chomik.logger.debug('Uploader.start: Upload of file "{n}" finished'.format(n=self.name))
             resp = xmltodict.parse(resp.content)['resp']
             if resp['@res'] != '1':

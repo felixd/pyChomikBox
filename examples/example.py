@@ -29,7 +29,7 @@ s = requests.session()
 c = Chomik(args.login, args.password, requests_session=s)
 c.login()
 
-upload_folder = c.get('Testy')
+upload_folder = c.get('test')
 
 class ProgressCallback(object):
     def __init__(self):
