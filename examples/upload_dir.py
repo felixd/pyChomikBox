@@ -60,7 +60,7 @@ class ProgressCallback(object):
         self.bar.show(done)
 
         if done > size / 2 and self.stop:
-            print("Progress Callback - Bytes uploaded: {i}".format(i=done))
+            print("Bytes uploaded: {i}".format(i=done))
             self.stop = False
             par.pause()
 
@@ -70,8 +70,6 @@ class ProgressCallback(object):
         elif isinstance(par, ChomikDownloader):
             print("Progress Callback - Bytes uploaded: {i}".format(i=par.bytes_downloaded))
         self.bar.done()
-callback = ProgressCallback()
-
 
 appDir = os.getcwd()
 os.chdir(localUploadDir)
@@ -90,15 +88,17 @@ for subdir, dirs, files in os.walk('.'):
             print(chomikCurrentDir.new_folder(d))
         
     for f in files:
+        fp = subdir + '/' + f
+        print('Local File: ' + fp)
         if not isinstance(chomikCurrentDir.get_file(f), ChomikFile):
-            fp = subdir + '/' + f
-            up = chomikCurrentDir.upload_file(open(fp, 'rb'), f, callback.progress_callback)
-            up.start()
+            pc = ProgressCallback()
+            upload = chomikCurrentDir.upload_file(open(fp, 'rb'), f, pc.progress_callback)
+            upload.start()
             time.sleep(1)
-            if up.paused:
+            if upload.paused:
                 time.sleep(1)
-                up.resume()  # This method doesn't work for Web Upload method
-            callback.finish_callback(up)
+                upload.resume()  # This method doesn't work for Web Upload method
+            pc.finish_callback(upload)
 
 os.chdir(appDir)
 
