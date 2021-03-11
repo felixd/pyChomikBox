@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Author: Paweł 'felixd' Wojciechowski - Outsourcing IT Konopnickiej.Com (2021)
 from __future__ import unicode_literals
 
 import os.path
@@ -59,15 +60,15 @@ class ProgressCallback(object):
         self.bar.show(done)
 
         if done > size / 2 and self.stop:
-            print(done)
+            print("Progress Callback - Bytes uploaded: {i}".format(i=done))
             self.stop = False
             par.pause()
 
     def finish_callback(self, par):
         if isinstance(par, ChomikUploader):
-            print(par.bytes_uploaded)
+            print("Progress Callback - Bytes uploaded: {i}".format(i=par.bytes_uploaded))
         elif isinstance(par, ChomikDownloader):
-            print(par.bytes_downloaded)
+            print("Progress Callback - Bytes uploaded: {i}".format(i=par.bytes_downloaded))
         self.bar.done()
 callback = ProgressCallback()
 
@@ -96,7 +97,7 @@ for subdir, dirs, files in os.walk('.'):
             time.sleep(1)
             if up.paused:
                 time.sleep(1)
-                up.resume()
+                up.resume()  # This method doesn't work for Web Upload method
             callback.finish_callback(up)
 
 os.chdir(appDir)
