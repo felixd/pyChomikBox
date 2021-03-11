@@ -659,14 +659,9 @@ class ChomikUploader(object):
         try:
             self.chomik.logger.debug('Uploader.start(): Started uploading file "{n}" to folder {f}'.format(n=self.name, f=self.folder.folder_id))
             resp = self.chomik.sess_web.post(self.web_upload['Url'], data=monitor, headers=headers)
-            print(resp)
         except Exception as e:
+            # TODO: Connection Erorr handling
             # Unexpected error: <class 'requests.exceptions.ConnectionError'>
-            print('Exception:')
-            print(e)
-            print("Unexpected error:", sys.exc_info()[0])
-
-            print('Exception:')
 
             if isinstance(e, self.UploadPaused):
                 self.chomik.logger.debug('Uploader.start(): Upload of file "{n}" paused'.format(n=self.name))
@@ -685,19 +680,16 @@ class ChomikUploader(object):
                 else:
                     raise e
         else:
-            print(resp)
-            self.chomik.logger.debug('Uploader.start(): Upload of file "{n}" finished'.format(n=self.name))
-            resp = xmltodict.parse(resp.content)['resp']
-            if resp['@res'] != '1':
-                if '@errorMessage' in resp:
-                    raise UploadException(resp['@res'], resp['@errorMessage'])
-                else:
-                    raise UploadException(resp['@res'])
-            if '@fileid' not in resp:
-                raise UploadException
+            self.chomik.logger.debug('Uploader.start(): Upload of file "{n}" finished'.format(n=self.name))        
+            resp = resp.json()
 
+            if 'fileId' not in resp['files'][0]:
+                raise UploadException('File ID is missing in upload response.')
+                        
+            self.paused = False
             self.finished = True
-            return resp['@fileid']
+
+            return resp['files'][0]['fileId']
 
     def resume(self):
         
