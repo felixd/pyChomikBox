@@ -287,7 +287,7 @@ class Chomik(ChomikFolder):
     def _send_web_action(self, action, data):
         self.logger.debug('Sending web action: "{}"'.format(action))
         headers = {'User-Agent': 'Mozilla/5.0', 'Content-Type': 'application/x-www-form-urlencoded', 'Accept-Language': 'en-US,*'}
-        resp = self.sess_web.post('http{}://chomikuj.pl/action/{}'.format('s' if self.ssl else '', action), data=data, headers=headers)
+        resp = self.sess_web.post('http{}://chomikuj.pl/action/{}'.format('s' if self.ssl else '', action), data=data, headers=headers, verify=False)
         try:
             return resp.json()
         except ValueError:
