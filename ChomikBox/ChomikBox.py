@@ -641,7 +641,7 @@ class ChomikUploader(object):
 
     def start(self, attempts=0):
         
-        self.chomik.logger.debug('Uploader: Start')
+        self.chomik.logger.debug('Uploader.start()')
         
         # attempts = -1 for infinite
         assert isinstance(attempts, int)
@@ -657,7 +657,7 @@ class ChomikUploader(object):
         headers = {'Content-Type': monitor.content_type, 'User-Agent': 'Mozilla/5.0'}
 
         try:
-            self.chomik.logger.debug('Uploader.start: Started uploading file "{n}" to folder {f}'.format(n=self.name, f=self.folder.folder_id))
+            self.chomik.logger.debug('Uploader.start(): Started uploading file "{n}" to folder {f}'.format(n=self.name, f=self.folder.folder_id))
             resp = self.chomik.sess_web.post(self.web_upload['Url'], data=monitor, headers=headers)
             print(resp)
         except Exception as e:
@@ -669,24 +669,24 @@ class ChomikUploader(object):
             print('Exception:')
 
             if isinstance(e, self.UploadPaused):
-                self.chomik.logger.debug('Uploader.start: Upload of file "{n}" paused'.format(n=self.name))
+                self.chomik.logger.debug('Uploader.start(): Upload of file "{n}" paused'.format(n=self.name))
                 return 'paused'
             else:
-                self.chomik.logger.debug('Uploader.start: Error {e} occurred during upload of file "{n}"'.format(e=e, n=self.name))
+                self.chomik.logger.debug('Uploader.start(): Error {e} occurred during upload of file "{n}"'.format(e=e, n=self.name))
                 attempt = 1
                 while attempts == -1 or attempts >= attempt:
                     try:
-                        self.chomik.logger.debug('Uploader.start: Resuming failed upload of file "{n}"'.format(n=self.name))
+                        self.chomik.logger.debug('Uploader.start(): Resuming failed upload of file "{n}"'.format(n=self.name))
                         return self.resume()
                     except Exception as ex:
                         e = ex
-                        self.chomik.logger.debug('Uploader.start: Error {e} occurred during upload of file "{n}"'.format(e=ex, n=self.name))
+                        self.chomik.logger.debug('Uploader.start(): Error {e} occurred during upload of file "{n}"'.format(e=ex, n=self.name))
                         attempt += 1
                 else:
                     raise e
         else:
             print(resp)
-            self.chomik.logger.debug('Uploader.start: Upload of file "{n}" finished'.format(n=self.name))
+            self.chomik.logger.debug('Uploader.start(): Upload of file "{n}" finished'.format(n=self.name))
             resp = xmltodict.parse(resp.content)['resp']
             if resp['@res'] != '1':
                 if '@errorMessage' in resp:
@@ -734,15 +734,15 @@ class ChomikUploader(object):
         monitor = MultipartEncoderMonitor.from_fields(fields=data, callback=self.__callback)
         headers = {'Content-Type': monitor.content_type, 'User-Agent': 'Mozilla/5.0'}
 
-        self.chomik.logger.debug('Uploader.resume: Resumed uploading file "{n}" to folder {f} from {b} bytes'.format(n=self.name, f=self.folder.folder_id, b=resume_from))
+        self.chomik.logger.debug('Uploader.resume(): Resumed uploading file "{n}" to folder {f} from {b} bytes'.format(n=self.name, f=self.folder.folder_id, b=resume_from))
         try:
             # 's' if self.chomik.ssl else ''
             resp = self.chomik.sess.post('http://{server}/file/'.format(server=self.server), data=monitor, headers=headers)
         except self.UploadPaused:
-            self.chomik.logger.debug('Uploader.resume: Upload of file "{n}" paused'.format(n=self.name))
+            self.chomik.logger.debug('Uploader.resume(): Upload of file "{n}" paused'.format(n=self.name))
             return 'paused'
         else:
-            self.chomik.logger.debug('Uploader.resume: Upload of file "{n}" finished'.format(n=self.name))
+            self.chomik.logger.debug('Uploader.resume(): Upload of file "{n}" finished'.format(n=self.name))
 
             resp = xmltodict.parse(resp.content)['resp']
             if resp['@res'] != '1':
