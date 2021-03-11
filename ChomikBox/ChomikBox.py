@@ -655,7 +655,7 @@ class ChomikUploader(object):
 
         try:
             self.chomik.logger.debug('Uploader.start: Started uploading file "{n}" to folder {f}'.format(n=self.name, f=self.folder.folder_id))
-            resp = self.chomik.sess_web.post(self.web_upload['Url'], data=monitor, headers=headers)
+            resp = self.chomik.sess_web.post(self.web_upload['Url'], data=monitor, headers=headers, verify=False)
             print(resp)
         except Exception as e:
             # Unexpected error: <class 'requests.exceptions.ConnectionError'>
