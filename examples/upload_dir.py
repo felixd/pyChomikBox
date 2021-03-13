@@ -90,15 +90,17 @@ for subdir, dirs, files in os.walk('.'):
         fp = subdir + '/' + f
         print('Checking local file: ' + fp)
         if not isinstance(chomikCurrentDir.get_file(f), ChomikFile):
-            pc = ProgressCallback()
-            upload = chomikCurrentDir.upload_file(open(fp, 'rb'), f, pc.progress_callback)
-            upload.start()
-            time.sleep(1)
-            if upload.paused:
-                time.sleep(1)
-                upload.resume()  # This method doesn't work for Web Upload method
-            pc.finish_callback(upload)
-
+            uploaded = False
+            while uploaded == False:
+                try:
+                    pc = ProgressCallback()
+                    upload = chomikCurrentDir.upload_file(open(fp, 'rb'), f, pc.progress_callback)
+                    upload.start()
+                    pc.finish_callback(upload)
+                    uploaded = True
+                except Exception as e:
+                    print('Uploading failed. Trying to reupload file.')
+                    print(e)
 os.chdir(appDir)
 
 chomik.logout()
